@@ -44,3 +44,34 @@ added. This solves duplication (re-running on the same PDF adds 0 new
 chunks) and, as a side effect, makes it possible to later add a second
 document to the same store without reprocessing or duplicating the
 first one's chunks.
+
+## RAG pipeline (retrieval + generation)
+
+answer_question ties the whole pipeline together: embeds the question,
+retrieves the k=3 most similar chunks from ChromaDB via
+similarity_search, joins their text into a single context block, and
+sends both the context and the question to llama3.2 with an explicit
+instruction to answer only from that context and say "I don't know"
+otherwise — this is the core mechanism that keeps the system grounded
+in the actual documents instead of the model's general training
+knowledge.
+
+The prompt instructions are written in Spanish, not English, even
+though the rest of the codebase is in English. This is intentional: the
+test PDF and any questions asked about it are in Spanish, so keeping
+the prompt in the same language avoids making the model switch
+languages mid-instruction, which smaller local models like llama3.2:3b
+handle less reliably than larger hosted models. I considered making the
+prompt language configurable (a dict of templates keyed by language
+code), but decided against it for now — the parameter would only
+control the instruction language, not translate or force the response
+language, so it wouldn't actually solve the real use case (asking in a
+different language than the document) and would add complexity without
+a genuine benefit at this stage.
+
+Tested with two questions: one answerable from the document ("¿Qué es
+el concept drift?", correctly answered using the relevant chunk) and
+one unrelated to it ("¿Cuál es la capital de Francia?", correctly
+answered "No lo sé" instead of answering from general knowledge) —
+confirming the grounding instruction works as intended, not just in
+theory.

@@ -12,3 +12,8 @@ Local RAG assistant that answers questions about your documents using Ollama and
   Deduplicates by content hash, so re-running on the same document
   doesn't create duplicate entries, and new documents can be added
   later without reprocessing existing ones.
+- `rag_pipeline.py` — ties retrieval and generation together:
+  retrieves the most relevant chunks for a question from the vector
+  store, then prompts llama3.2 to answer using only that context,
+  explicitly instructed to say when it doesn't know rather than
+  answering from general knowledge.
