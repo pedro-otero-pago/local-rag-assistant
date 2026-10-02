@@ -75,3 +75,38 @@ one unrelated to it ("¿Cuál es la capital de Francia?", correctly
 answered "No lo sé" instead of answering from general knowledge) —
 confirming the grounding instruction works as intended, not just in
 theory.
+
+## Streamlit interface (app.py)
+
+The interface lets the user upload a PDF, processes it through the
+existing pipeline (load_pdf_text -> split_text -> create_vector_store),
+and then lets them ask questions, reusing answer_question from
+rag_pipeline.py unchanged — the UI layer doesn't duplicate any RAG
+logic, it just wires the existing functions to Streamlit widgets.
+
+Uploaded files arrive in memory (a BytesIO-like object), not as a file
+path, so they're written to disk first (in binary mode, since a PDF
+isn't plain text) before being passed to load_pdf_text, which expects a
+path.
+
+Streamlit re-runs the entire script top to bottom on every user
+interaction (uploading a file, typing a question) rather than running
+once and waiting. This means a plain Python variable doesn't survive
+between interactions — it gets recreated from scratch each time.
+st.session_state is Streamlit's mechanism for state that does persist
+across re-runs within the same browser session.
+
+I hit this directly: the vector store was first assigned to a plain
+local variable (vector_store = create_vector_store(chunks)) instead of
+st.session_state.vector_store, while the question section checked
+st.session_state.vector_store is not None. Since that session_state
+value was never actually updated, it stayed None forever, and the
+question box never appeared after uploading a document — a correct
+design (checking session_state) defeated by writing to the wrong
+variable. Fixed by assigning directly to st.session_state.vector_store.
+
+Tested end-to-end: uploaded the test PDF, got the indexed-chunks
+confirmation, asked an informally-phrased question ("¿qué es el
+drift?", not matching the document's exact wording) and got a correct,
+grounded answer — confirming the semantic search still works through
+the UI, not just when called directly from a script.
