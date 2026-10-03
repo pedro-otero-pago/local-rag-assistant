@@ -136,3 +136,21 @@ país está Londres?" (answered "No lo sé.", unrelated to the document)
 — confirming both that conversation history persists correctly across
 turns and that the grounding behavior still holds mid-conversation, not
 just on a fresh session.
+
+## Tests
+
+test_document_processing.py covers load_pdf_text (using the real test
+PDF) and split_text (chunk size, overlap, short/empty text) — all
+deterministic, no external services needed.
+
+The rest of the pipeline (embeddings, vector store, generation) depends
+on Ollama running locally, which a plain unit test shouldn't assume is
+always true — unlike the previous two projects, where everything could
+be tested without any external service. Added one smoke test instead,
+test_embeddings.py, guarded with @pytest.mark.skipif based on a quick
+connection check to Ollama's local endpoint (localhost:11434). If
+Ollama isn't running, the test is skipped cleanly (not failed) with a
+clear reason, rather than someone cloning the repo seeing a confusing
+connection error. When Ollama is running, it confirms the embedding
+model returns a 768-dimensional vector of real floats — the same
+dimension verified manually earlier.

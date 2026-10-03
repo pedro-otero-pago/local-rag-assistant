@@ -29,3 +29,15 @@ Local RAG assistant that answers questions about your documents using Ollama and
 
 Upload a PDF, wait for it to be indexed, then ask questions about its
 content in the text box that appears.
+
+## Running tests
+
+    python -m pytest -v
+
+Run from the project root (not inside src/tests/), with the virtual
+environment activated — `pytest` installed globally (e.g. via
+Anaconda) resolves to the wrong Python and fails to find the project's
+dependencies.
+
+Most tests are deterministic and need no external services. One test
+(embeddings) is skipped automatically if Ollama isn't running locally.
