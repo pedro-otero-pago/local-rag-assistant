@@ -110,3 +110,29 @@ confirmation, asked an informally-phrased question ("¿qué es el
 drift?", not matching the document's exact wording) and got a correct,
 grounded answer — confirming the semantic search still works through
 the UI, not just when called directly from a script.
+
+## Chat-style interface redesign
+
+Replaced the single-answer layout (a text input that showed only the
+latest question and answer) with a proper chat interface using
+st.chat_message and st.chat_input.
+
+A new st.session_state.messages list stores the full conversation as a
+list of {"role": ..., "content": ...} dicts. Since Streamlit re-runs
+the whole script on every interaction, the conversation has to be
+redrawn from scratch each time — a for loop over st.session_state.messages
+runs on every re-run, rebuilding the visible history from what was
+saved, rather than the history persisting on screen by itself.
+
+The user's question is appended to the message list and displayed
+before generating the answer, so it's visible immediately while
+llama3.2 is still "thinking" (inside a spinner nested in the assistant's
+chat bubble), rather than the screen showing nothing until the whole
+round trip finishes.
+
+Tested with two questions in the same session: "¿qué es el concept
+drift?" (answered correctly from the document) followed by "¿en qué
+país está Londres?" (answered "No lo sé.", unrelated to the document)
+— confirming both that conversation history persists correctly across
+turns and that the grounding behavior still holds mid-conversation, not
+just on a fresh session.

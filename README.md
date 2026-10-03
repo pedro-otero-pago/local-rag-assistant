@@ -17,11 +17,10 @@ Local RAG assistant that answers questions about your documents using Ollama and
   store, then prompts llama3.2 to answer using only that context,
   explicitly instructed to say when it doesn't know rather than
   answering from general knowledge.
-- `app.py` — Streamlit interface: upload a PDF, process and index it,
-  then ask questions about it. Reuses the existing pipeline functions
-  without duplicating logic; state (the vector store) is kept in
-  st.session_state so it survives Streamlit's full-script re-runs on
-  every interaction.
+- `app.py` — Streamlit chat interface: upload a PDF, process and index
+  it, then ask questions in a conversational format (st.chat_message /
+  st.chat_input) with full history kept in st.session_state, which
+  persists across Streamlit's full-script re-runs on every interaction.
 
 
 ## Running the app
